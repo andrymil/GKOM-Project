@@ -8,12 +8,13 @@ from src.model import Model
 
 
 def main():
-    app_window = Window(800, 600, "GKOM - Billboarding (Phase 1)")
+    app_window = Window(800, 600, "GKOM - Billboarding")
 
     shader = ShaderProgram("shaders/basic.vert", "shaders/basic.frag")
 
     tree_model = Model("models/test_model.obj")
     cube_model = Model("models/cube.obj")
+    sphere_model = Model("models/sphere.obj")
 
     while app_window.is_running():
         app_window.clear()
@@ -35,22 +36,26 @@ def main():
         shader.set_mat4("view", view)
 
         model_tree = glm.mat4(1.0)
-        model_tree = glm.translate(model_tree, glm.vec3(-1.5, 0.0, 0.0))
+        model_tree = glm.translate(model_tree, glm.vec3(-2.5, 0.0, 0.0))
         model_tree = glm.rotate(
             model_tree, float(app_window.get_time()), glm.vec3(0.0, 1.0, 0.0)
         )
-
         shader.set_mat4("model", model_tree)
         shader.set_vec3("objectColor", glm.vec3(0.2, 0.8, 0.2))
         tree_model.draw()
 
-        model_cube = glm.mat4(1.0)
-        model_cube = glm.translate(model_cube, glm.vec3(1.5, 0.0, 0.0))
+        model_sphere = glm.mat4(1.0)
+        model_sphere = glm.translate(model_sphere, glm.vec3(-0.5, 0.0, 0.0))
 
+        shader.set_mat4("model", model_sphere)
+        shader.set_vec3("objectColor", glm.vec3(0.2, 0.5, 0.9))
+        sphere_model.draw()
+
+        model_cube = glm.mat4(1.0)
+        model_cube = glm.translate(model_cube, glm.vec3(2.0, 0.0, 0.0))
         model_cube = glm.rotate(
             model_cube, float(app_window.get_time()) * 0.8, glm.vec3(1.0, 1.0, 0.0)
         )
-
         shader.set_mat4("model", model_cube)
         shader.set_vec3("objectColor", glm.vec3(0.8, 0.2, 0.2))
         cube_model.draw()
