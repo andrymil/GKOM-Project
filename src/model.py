@@ -19,7 +19,8 @@ class Model:
             return
 
         temp_vertices = []
-        final_vertices = []
+        temp_normals = []
+        final_data = []
 
         print(f"Loading model: {filepath}...")
 
@@ -27,19 +28,33 @@ class Model:
             for line in f:
                 if line.startswith("v "):
                     parts = line.split()
-
                     temp_vertices.append(
                         (float(parts[1]), float(parts[2]), float(parts[3]))
                     )
-
+                elif line.startswith("vn "):
+                    parts = line.split()
+                    temp_normals.append(
+                        (float(parts[1]), float(parts[2]), float(parts[3]))
+                    )
                 elif line.startswith("f "):
                     parts = line.split()
                     for i in range(1, 4):
-                        idx = int(parts[i].split("/")[0]) - 1
-                        final_vertices.extend(temp_vertices[idx])
+                        v_data = parts[i].split("/")
+                        v_idx = int(v_data[0]) - 1
 
-        self.vertices = np.array(final_vertices, dtype=np.float32)
-        self.vertex_count = len(self.vertices) // 3
+                        vx, vy, vz = temp_vertices[v_idx]
+
+                        nx, ny, nz = 0.0, 1.0, 0.0
+
+                        if len(v_data) >= 3 and v_data[2] != "":
+                            n_idx = int(v_data[2]) - 1
+                            nx, ny, nz = temp_normals[n_idx]
+
+                        final_data.extend([vx, vy, vz, nx, ny, nz])
+
+        self.vertices = np.array(final_data, dtype=np.float32)
+
+        self.vertex_count = len(self.vertices) // 6
         print(f"Model loaded successfully. Vertices count: {self.vertex_count}")
 
     def _setup_mesh(self):
@@ -55,10 +70,13 @@ class Model:
             GL_ARRAY_BUFFER, self.vertices.nbytes, self.vertices, GL_STATIC_DRAW
         )
 
-        glVertexAttribPointer(
-            0, 3, GL_FLOAT, GL_FALSE, 3 * self.vertices.itemsize, ctypes.c_void_p(0)
-        )
+        stride = 6 * self.vertices.itemsize
+
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, stride, ctypes.c_void_p(0))
         glEnableVertexAttribArray(0)
+
+        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, stride, ctypes.c_void_p(12))
+        glEnableVertexAttribArray(1)
 
         glBindBuffer(GL_ARRAY_BUFFER, 0)
         glBindVertexArray(0)
