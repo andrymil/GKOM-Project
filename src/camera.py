@@ -24,7 +24,6 @@ class Camera:
         if direction == "BACKWARD":
             self.position -= self.front * velocity
         if direction == "LEFT":
-
             self.position -= glm.normalize(glm.cross(self.front, self.up)) * velocity
         if direction == "RIGHT":
             self.position += glm.normalize(glm.cross(self.front, self.up)) * velocity

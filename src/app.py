@@ -20,7 +20,7 @@ class Application:
         glfw.set_cursor_pos_callback(self.window.window, self.mouse_callback)
 
         self.shader = ShaderProgram("shaders/basic.vert", "shaders/basic.frag")
-        self.tree_model = Model("models/tree_cone.obj")
+        self.shoe_model = Model("models/shoe.obj")
         self.cube_model = Model("models/cube.obj")
         self.sphere_model = Model("models/sphere.obj")
 
@@ -60,14 +60,24 @@ class Application:
         model,
         position,
         color,
-        rotation_angle=0.0,
-        rotation_axis=glm.vec3(0, 1, 0),
+        scale=1.0,
+        fix_angle=0.0,
+        fix_axis=glm.vec3(1, 0, 0),
+        anim_angle=0.0,
+        anim_axis=glm.vec3(0, 1, 0),
     ):
         model_matrix = glm.mat4(1.0)
+
         model_matrix = glm.translate(model_matrix, position)
 
-        if rotation_angle != 0.0:
-            model_matrix = glm.rotate(model_matrix, rotation_angle, rotation_axis)
+        if anim_angle != 0.0:
+            model_matrix = glm.rotate(model_matrix, anim_angle, anim_axis)
+
+        if fix_angle != 0.0:
+            model_matrix = glm.rotate(model_matrix, fix_angle, fix_axis)
+
+        if scale != 1.0:
+            model_matrix = glm.scale(model_matrix, glm.vec3(scale))
 
         self.shader.set_mat4("model", model_matrix)
         self.shader.set_vec3("objectColor", color)
@@ -95,20 +105,26 @@ class Application:
             time_val = glfw.get_time()
 
             self.render_object(
-                self.tree_model,
-                glm.vec3(-2.5, 0.0, 0.0),
-                glm.vec3(0.2, 0.8, 0.2),
-                time_val,
+                model=self.shoe_model,
+                position=glm.vec3(-2.5, 0.0, 0.0),
+                color=glm.vec3(0.2, 0.8, 0.2),
+                scale=0.3,
+                fix_angle=glm.radians(-90.0),
+                fix_axis=glm.vec3(1.0, 0.0, 0.0),
+                anim_angle=time_val,
+                anim_axis=glm.vec3(0, 1, 0),
             )
             self.render_object(
-                self.sphere_model, glm.vec3(0.0, 0.0, 0.0), glm.vec3(0.2, 0.5, 0.9)
+                model=self.sphere_model,
+                position=glm.vec3(0.0, 0.0, 0.0),
+                color=glm.vec3(0.2, 0.5, 0.9),
             )
             self.render_object(
-                self.cube_model,
-                glm.vec3(2.5, 0.0, 0.0),
-                glm.vec3(0.8, 0.2, 0.2),
-                time_val * 0.8,
-                glm.vec3(1.0, 1.0, 0.0),
+                model=self.cube_model,
+                position=glm.vec3(2.5, 0.0, 0.0),
+                color=glm.vec3(0.8, 0.2, 0.2),
+                anim_angle=time_val * 0.8,
+                anim_axis=glm.vec3(1.0, 1.0, 0.0),
             )
 
             self.window.update()
