@@ -41,7 +41,11 @@ lub za pomocą uv:
 W tym etapie zrealizowano wymagania:
 
 - **Wczytywanie skyboxa** (cubemap z 6 tekstur).
-- **Obracanie płaskich obiektów** (billboardy testowe).
+- **Billboarding w 2 wersjach**:
+  - axial (scena `trees`),
+  - world-oriented (scena `clouds`).
+- **Przełączanie scen argumentem konsoli**.
+- **Zatrzymanie obrotu billboardów klawiszem `R`**.
 
 ## Co zostało zrobione
 
@@ -52,17 +56,25 @@ W tym etapie zrealizowano wymagania:
 - Dodano shadery skyboxa:
   - `shaders/skybox.vert`,
   - `shaders/skybox.frag`.
-- Dodano model płaski `models/plane.obj`.
+- Dodano model billboardu `models/billboard.obj`.
 - Dodano testowe tekstury skyboxa `textures/skybox/*.ppm` (6 ścian).
 - W `src/app.py`:
   - podpięto renderowanie skyboxa do pętli renderującej,
-  - dodano dwa obracające się obiekty typu plane,
-  - dodano klawisz **R** (pauza/wznowienie obrotu bez resetu pozycji).
+  - dodano obliczanie macierzy billboardów:
+    - `_axial_billboard_matrix(...)`,
+    - `_world_oriented_billboard_matrix(...)`,
+  - dodano dwie sceny billboardowe (`trees`, `clouds`),
+  - dodano pauzę/wznowienie obrotu billboardów względem kamery (`R`).
+- W `main.py`:
+  - dodano wybór sceny z argumentu konsoli:
+    - `python main.py trees`,
+    - `python main.py clouds`.
 
 ## Jak sprawdzić funkcje z etapu 2
 
-1. Uruchom program (`python main.py` lub `uv run main.py`).
-2. Sprawdź, że kamera znajduje się wewnątrz sześcianu skyboxa (różne kolory ścian).
-3. Poruszaj się kamerą – skybox powinien pozostać tłem niezależnie od ruchu.
-4. Obserwuj dwa płaskie obiekty (plane) – powinny obracać się płynnie.
-5. Wciśnij **R** – obrót powinien się zatrzymać, ponowne **R** wznawia animację od tego samego kąta.
+1. Uruchom scenę z billboardami axial: `python main.py trees`.
+2. Uruchom scenę z billboardami world-oriented: `python main.py clouds`.
+3. W obu scenach sprawdź, że skybox poprawnie otacza kamerę.
+4. W scenie `trees` billboardy obracają się tylko wokół osi pionowej (Y).
+5. W scenie `clouds` billboardy pełniej orientują się względem kamery.
+6. Wciśnij `R` i porusz kamerą: billboardy powinny być chwilowo "zamrożone".
