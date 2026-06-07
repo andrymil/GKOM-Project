@@ -1,6 +1,7 @@
 #version 330 core
 in vec3 FragPos;
 in vec3 Normal;
+in vec2 TexCoord;
 
 out vec4 color;
 
@@ -8,6 +9,10 @@ uniform vec3 lightPos;
 uniform vec3 viewPos;
 uniform vec3 objectColor;
 uniform vec3 lightColor;
+uniform sampler2D objectTexture;
+uniform bool useTexture;
+uniform bool useColorKey;
+uniform vec3 colorKey;
 
 void main() {
 
@@ -26,6 +31,15 @@ void main() {
   float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32);
   vec3 specular = specularStrength * spec * lightColor;
 
-  vec3 result = (ambient + diffuse + specular) * objectColor;
+  vec3 baseColor = objectColor;
+  if (useTexture) {
+    vec3 texColor = texture(objectTexture, TexCoord).rgb;
+    if (useColorKey && distance(texColor, colorKey) < 0.02) {
+      discard;
+    }
+    baseColor *= texColor;
+  }
+
+  vec3 result = (ambient + diffuse + specular) * baseColor;
   color = vec4(result, 1.0);
 }

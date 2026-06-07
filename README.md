@@ -56,8 +56,11 @@ W tym etapie zrealizowano wymagania:
 - Dodano shadery skyboxa:
   - `shaders/skybox.vert`,
   - `shaders/skybox.frag`.
+- Dodano tekstury obiektów:
+  - `textures/tree.ppm`,
+  - `textures/cloud.ppm`.
 - Dodano model billboardu `models/billboard.obj`.
-- Dodano testowe tekstury skyboxa `textures/skybox/*.ppm` (6 ścian).
+- Dodano proste krajobrazowe tekstury skyboxa `textures/skybox/*.ppm` (6 ścian: niebo, las, ziemia).
 - W `src/app.py`:
   - podpięto renderowanie skyboxa do pętli renderującej,
   - dodano obliczanie macierzy billboardów:
