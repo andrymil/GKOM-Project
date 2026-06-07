@@ -7,6 +7,7 @@ from src.shader import ShaderProgram
 from src.model import Model
 from src.camera import Camera
 from src.skybox import Skybox
+from src.texture import Texture2D
 
 
 class Application:
@@ -30,6 +31,8 @@ class Application:
         self.shader = ShaderProgram("shaders/basic.vert", "shaders/basic.frag")
         self.skybox_shader = ShaderProgram("shaders/skybox.vert", "shaders/skybox.frag")
         self.billboard_model = Model("models/billboard.obj")
+        self.tree_texture = Texture2D("textures/tree.ppm")
+        self.cloud_texture = Texture2D("textures/cloud.ppm")
 
         self.skybox = Skybox(
             [
@@ -119,6 +122,8 @@ class Application:
 
         self.shader.set_mat4("model", model_matrix)
         self.shader.set_vec3("objectColor", color)
+        glUniform1i(glGetUniformLocation(self.shader.id, "useTexture"), GL_FALSE)
+        glUniform1i(glGetUniformLocation(self.shader.id, "useColorKey"), GL_FALSE)
         model.draw()
 
     def _build_billboard_matrix(self, position, right, up, forward, scale_x, scale_y):
@@ -165,7 +170,7 @@ class Application:
         up = glm.normalize(glm.cross(to_camera, right))
         return self._build_billboard_matrix(position, right, up, to_camera, scale_x, scale_y)
 
-    def render_billboard(self, position, color, scale_x, scale_y, mode):
+    def render_billboard(self, position, color, scale_x, scale_y, mode, texture):
         if mode == "axial":
             model_matrix = self._axial_billboard_matrix(position, scale_x, scale_y)
         else:
@@ -173,6 +178,11 @@ class Application:
 
         self.shader.set_mat4("model", model_matrix)
         self.shader.set_vec3("objectColor", color)
+        texture.bind(0)
+        glUniform1i(glGetUniformLocation(self.shader.id, "objectTexture"), 0)
+        glUniform1i(glGetUniformLocation(self.shader.id, "useTexture"), GL_TRUE)
+        glUniform1i(glGetUniformLocation(self.shader.id, "useColorKey"), GL_TRUE)
+        self.shader.set_vec3("colorKey", glm.vec3(1.0, 0.0, 1.0))
         self.billboard_model.draw()
 
     def render_billboard_scene(self):
@@ -180,19 +190,21 @@ class Application:
             for position in self.tree_positions:
                 self.render_billboard(
                     position=position,
-                    color=glm.vec3(0.2, 0.7, 0.2),
+                    color=glm.vec3(1.0, 1.0, 1.0),
                     scale_x=1.2,
                     scale_y=2.6,
                     mode="axial",
+                    texture=self.tree_texture,
                 )
         else:
             for position in self.cloud_positions:
                 self.render_billboard(
                     position=position,
-                    color=glm.vec3(0.9, 0.9, 0.95),
+                    color=glm.vec3(1.0, 1.0, 1.0),
                     scale_x=2.8,
                     scale_y=1.4,
                     mode="world",
+                    texture=self.cloud_texture,
                 )
 
     def run(self):
