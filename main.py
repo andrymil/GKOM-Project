@@ -9,9 +9,11 @@ def main():
 
     try:
         app = Application(scene_mode=scene_mode)
-    except ValueError:
-        print("Invalid scene mode. Use: trees or clouds")
-        return
+    except ValueError as e:
+        if "Scene mode" in str(e):
+            print("Invalid scene mode. Use: trees or clouds")
+        else:
+            raise
 
     app.run()
 
