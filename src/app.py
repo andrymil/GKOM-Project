@@ -19,7 +19,7 @@ class Application:
         self.scene_mode = scene_mode
         self.window = Window(800, 600, f"GKOM - Billboarding ({scene_mode})")
 
-        self.camera = Camera((0.0, 1.0, 7.0))
+        self.camera = Camera((0.0, 3.0, 7.0))
         self.last_x = 400
         self.last_y = 300
         self.first_mouse = True
@@ -31,14 +31,16 @@ class Application:
 
         self.shader = ShaderProgram("shaders/basic.vert", "shaders/basic.frag")
         self.skybox_shader = ShaderProgram("shaders/skybox.vert", "shaders/skybox.frag")
-
         self.billboard_model = Model("models/billboard.obj")
+        self.plane_model = Model("models/plane.obj")
 
         self.tree_material = Material(ambient=0.3, specular=0.2, shininess=8.0)
         self.cloud_material = Material(ambient=0.6, specular=0.1, shininess=4.0)
+        self.plane_material = Material(ambient=0.3, specular=0.8, shininess=64.0)
 
         self.tree_texture = Texture2D("textures/tree.ppm")
         self.cloud_texture = Texture2D("textures/cloud.ppm")
+        self.plane_texture = Texture2D("textures/plane.ppm")
 
         self.skybox = Skybox(
             [
@@ -112,6 +114,8 @@ class Application:
         fix_axis=None,
         anim_angle=0.0,
         anim_axis=None,
+        texture=None,
+        material=None,
     ):
         if fix_axis is None:
             fix_axis = glm.vec3(1, 0, 0)
@@ -119,22 +123,31 @@ class Application:
             anim_axis = glm.vec3(0, 1, 0)
 
         model_matrix = glm.mat4(1.0)
-
         model_matrix = glm.translate(model_matrix, position)
-
         if anim_angle != 0.0:
             model_matrix = glm.rotate(model_matrix, anim_angle, anim_axis)
-
         if fix_angle != 0.0:
             model_matrix = glm.rotate(model_matrix, fix_angle, fix_axis)
-
         if scale != 1.0:
             model_matrix = glm.scale(model_matrix, glm.vec3(scale))
 
         self.shader.set_mat4("model", model_matrix)
         self.shader.set_vec3("objectColor", color)
-        glUniform1i(glGetUniformLocation(self.shader.id, "useTexture"), GL_FALSE)
+
+        if texture is not None:
+            texture.bind(0)
+            glUniform1i(glGetUniformLocation(self.shader.id, "objectTexture"), 0)
+            glUniform1i(glGetUniformLocation(self.shader.id, "useTexture"), GL_TRUE)
+        else:
+            glUniform1i(glGetUniformLocation(self.shader.id, "useTexture"), GL_FALSE)
+
         glUniform1i(glGetUniformLocation(self.shader.id, "useColorKey"), GL_FALSE)
+
+        if material is not None:
+            material.apply(self.shader)
+        else:
+            Material().apply(self.shader)
+
         model.draw()
 
     def _build_billboard_matrix(self, position, right, up, forward, scale_x, scale_y):
@@ -249,6 +262,17 @@ class Application:
             self.shader.set_vec3("lightPos", glm.vec3(0.0, 5.0, 2.0))
             self.shader.set_vec3("viewPos", self.camera.position)
             self.shader.set_vec3("lightColor", glm.vec3(1.0, 1.0, 1.0))
+
+            self.render_object(
+                model=self.plane_model,
+                position=glm.vec3(0.0, 3.0, -1.0),
+                color=glm.vec3(1.0, 1.0, 1.0),
+                scale=0.1,
+                fix_angle=glm.radians(90.0),
+                fix_axis=glm.vec3(0, 1, 0),
+                texture=self.plane_texture,
+                material=self.plane_material,
+            )
 
             self.render_billboard_scene()
 
