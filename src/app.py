@@ -8,6 +8,7 @@ from src.model import Model
 from src.camera import Camera
 from src.skybox import Skybox
 from src.texture import Texture2D
+from src.material import Material
 
 
 class Application:
@@ -30,7 +31,12 @@ class Application:
 
         self.shader = ShaderProgram("shaders/basic.vert", "shaders/basic.frag")
         self.skybox_shader = ShaderProgram("shaders/skybox.vert", "shaders/skybox.frag")
+
         self.billboard_model = Model("models/billboard.obj")
+
+        self.tree_material = Material(ambient=0.3, specular=0.2, shininess=8.0)
+        self.cloud_material = Material(ambient=0.6, specular=0.1, shininess=4.0)
+
         self.tree_texture = Texture2D("textures/tree.ppm")
         self.cloud_texture = Texture2D("textures/cloud.ppm")
 
@@ -103,10 +109,15 @@ class Application:
         color,
         scale=1.0,
         fix_angle=0.0,
-        fix_axis=glm.vec3(1, 0, 0),
+        fix_axis=None,
         anim_angle=0.0,
-        anim_axis=glm.vec3(0, 1, 0),
+        anim_axis=None,
     ):
+        if fix_axis is None:
+            fix_axis = glm.vec3(1, 0, 0)
+        if anim_axis is None:
+            anim_axis = glm.vec3(0, 1, 0)
+
         model_matrix = glm.mat4(1.0)
 
         model_matrix = glm.translate(model_matrix, position)
@@ -150,7 +161,9 @@ class Application:
 
         up = glm.vec3(0.0, 1.0, 0.0)
         right = glm.normalize(glm.cross(up, forward))
-        return self._build_billboard_matrix(position, right, up, forward, scale_x, scale_y)
+        return self._build_billboard_matrix(
+            position, right, up, forward, scale_x, scale_y
+        )
 
     def _world_oriented_billboard_matrix(self, position, scale_x, scale_y):
         to_camera = self._get_billboard_camera_position() - position
@@ -168,21 +181,30 @@ class Application:
             right = glm.normalize(right)
 
         up = glm.normalize(glm.cross(to_camera, right))
-        return self._build_billboard_matrix(position, right, up, to_camera, scale_x, scale_y)
+        return self._build_billboard_matrix(
+            position, right, up, to_camera, scale_x, scale_y
+        )
 
-    def render_billboard(self, position, color, scale_x, scale_y, mode, texture):
+    def render_billboard(
+        self, position, color, scale_x, scale_y, mode, texture, material
+    ):
         if mode == "axial":
             model_matrix = self._axial_billboard_matrix(position, scale_x, scale_y)
         else:
-            model_matrix = self._world_oriented_billboard_matrix(position, scale_x, scale_y)
+            model_matrix = self._world_oriented_billboard_matrix(
+                position, scale_x, scale_y
+            )
 
         self.shader.set_mat4("model", model_matrix)
         self.shader.set_vec3("objectColor", color)
         texture.bind(0)
+
         glUniform1i(glGetUniformLocation(self.shader.id, "objectTexture"), 0)
         glUniform1i(glGetUniformLocation(self.shader.id, "useTexture"), GL_TRUE)
         glUniform1i(glGetUniformLocation(self.shader.id, "useColorKey"), GL_TRUE)
+
         self.shader.set_vec3("colorKey", glm.vec3(1.0, 0.0, 1.0))
+        material.apply(self.shader)
         self.billboard_model.draw()
 
     def render_billboard_scene(self):
@@ -195,6 +217,7 @@ class Application:
                     scale_y=2.6,
                     mode="axial",
                     texture=self.tree_texture,
+                    material=self.tree_material,
                 )
         else:
             for position in self.cloud_positions:
@@ -205,6 +228,7 @@ class Application:
                     scale_y=1.4,
                     mode="world",
                     texture=self.cloud_texture,
+                    material=self.cloud_material,
                 )
 
     def run(self):

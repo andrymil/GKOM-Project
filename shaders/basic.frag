@@ -13,6 +13,9 @@ uniform sampler2D objectTexture;
 uniform bool useTexture;
 uniform bool useColorKey;
 uniform vec3 colorKey;
+uniform float ambientStrength;
+uniform float specularStrength;
+uniform float shininess;
 
 void main() {
 
@@ -28,7 +31,7 @@ void main() {
   vec3 viewDir = normalize(viewPos - FragPos);
   vec3 reflectDir = reflect(-lightDir, norm);
 
-  float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32);
+  float spec = pow(max(dot(viewDir, reflectDir), 0.0), shininess);
   vec3 specular = specularStrength * spec * lightColor;
 
   vec3 baseColor = objectColor;

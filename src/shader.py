@@ -27,3 +27,7 @@ class ShaderProgram:
     def set_vec3(self, name, vec):
         location = glGetUniformLocation(self.id, name)
         glUniform3fv(location, 1, glm.value_ptr(vec))
+
+    def set_float(self, name, value):
+        location = glGetUniformLocation(self.id, name)
+        glUniform1f(location, value)
