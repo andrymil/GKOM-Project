@@ -1,83 +1,66 @@
-# GKOM - Billboarding (Etap 1)
+# GKOM – Billboarding
 
-## Zrealizowane funkcjonalności
+Program renderuje scenę 3D z billboardami drzew lub chmur, skyboxem oraz modelem 3D oświetlonym cieniowaniem Phonga.
 
-- Inicjalizacja i obsługa okna za pomocą GLFW.
-- Własny parser plików `.obj` (wczytywanie wierzchołków i wektorów normalnych).
-- Pełne cieniowanie Phonga (Ambient, Diffuse, Specular) realizowane w shaderach.
-- Kamera typu "Fly/FPS" pozwalająca na swobodne poruszanie się po scenie.
-- Niezależne transformacje obiektów na scenie (translacja, rotacja, skalowanie).
+## Wymagania
+
+- Python 3.12+
+- [uv](https://github.com/astral-sh/uv) lub pip
 
 ## Instalacja
 
-Aby pobrać niezbędne biblioteki należy wykonać poniższą komendę:
+```bash
+uv sync
+```
 
-`pip install -r requirements.txt`
+lub
 
-Można również skorzystać z uv (`pip install uv`):
+```bash
+pip install -r requirements.txt
+```
 
-`uv sync`
+## Uruchomienie
 
-## Uruchomienie i sterowanie
+```bash
+python main.py trees    # scena z drzewami (billboardy axial)
+python main.py clouds   # scena z chmurami (billboardy world-oriented)
+```
 
-Aby uruchomić program, należy wykonać główny plik z poziomu konsoli:
-`python main.py`
+Domyślnie bez podania argumentu uruchamia się scena `trees`.
 
-lub za pomocą uv:
-`uv run main.py`
+## Sterowanie
 
-**Sterowanie:**
+| Klawisz             | Akcja                                      |
+| ------------------- | ------------------------------------------ |
+| W / S / A / D       | Poruszanie się po scenie                   |
+| Spacja / Lewy Shift | Lot w górę / w dół                         |
+| Mysz                | Obrót kamery                               |
+| R                   | Zamrożenie / wznowienie obrotu billboardów |
+| ESC                 | Wyjście                                    |
 
-- **W / S / A / D** - Poruszanie się (Przód / Tył / Lewo / Prawo)
-- **Spacja** - Lot w górę
-- **Lewy Shift** - Lot w dół
-- **Mysz** - Rozglądanie się (obrót kamery)
-- **ESC** - Wyjście z programu
+## Struktura projektu
 
-# GKOM - Billboarding (Etap 2)
+```
+src/
+├── app.py        # Główna klasa aplikacji – pętla renderująca, obsługa scen i billboardów
+├── camera.py     # Kamera FPS z obsługą klawiatury i myszy
+├── model.py      # Wczytywanie i renderowanie modeli w formacie .obj
+├── shader.py     # Kompilacja i obsługa programów shaderów GLSL
+├── skybox.py     # Cubemapa skyboxa – ładowanie tekstur i renderowanie sześcianu
+├── texture.py    # Ładowanie tekstur 2D z plików PPM
+├── material.py   # Parametry materiału Phonga (ambient, specular, shininess)
+├── utils.py      # Wspólny parser plików PPM
+└── window.py     # Inicjalizacja okna GLFW i kontekstu OpenGL
+shaders/
+├── basic.vert / basic.frag       # Shader obiektów sceny z cieniowaniem Phonga
+└── skybox.vert / skybox.frag     # Shader skyboxa
+```
 
-## Zakres etapu 2
+## Zrealizowane funkcjonalności
 
-W tym etapie zrealizowano wymagania:
-
-- **Wczytywanie skyboxa** (cubemap z 6 tekstur).
-- **Billboarding w 2 wersjach**:
-  - axial (scena `trees`),
-  - world-oriented (scena `clouds`).
-- **Przełączanie scen argumentem konsoli**.
-- **Zatrzymanie obrotu billboardów klawiszem `R`**.
-
-## Co zostało zrobione
-
-- Dodano klasę `Skybox` w `src/skybox.py`:
-  - ładowanie 6 tekstur cubemapy (`GL_TEXTURE_CUBE_MAP`),
-  - utworzenie siatki sześcianu (36 wierzchołków),
-  - render skyboxa z poprawną obsługą depth buffer (nie zasłania obiektów sceny).
-- Dodano shadery skyboxa:
-  - `shaders/skybox.vert`,
-  - `shaders/skybox.frag`.
-- Dodano tekstury obiektów:
-  - `textures/tree.ppm`,
-  - `textures/cloud.ppm`.
-- Dodano model billboardu `models/billboard.obj`.
-- Dodano proste krajobrazowe tekstury skyboxa `textures/skybox/*.ppm` (6 ścian: niebo, las, ziemia).
-- W `src/app.py`:
-  - podpięto renderowanie skyboxa do pętli renderującej,
-  - dodano obliczanie macierzy billboardów:
-    - `_axial_billboard_matrix(...)`,
-    - `_world_oriented_billboard_matrix(...)`,
-  - dodano dwie sceny billboardowe (`trees`, `clouds`),
-  - dodano pauzę/wznowienie obrotu billboardów względem kamery (`R`).
-- W `main.py`:
-  - dodano wybór sceny z argumentu konsoli:
-    - `python main.py trees`,
-    - `python main.py clouds`.
-
-## Jak sprawdzić funkcje z etapu 2
-
-1. Uruchom scenę z billboardami axial: `python main.py trees`.
-2. Uruchom scenę z billboardami world-oriented: `python main.py clouds`.
-3. W obu scenach sprawdź, że skybox poprawnie otacza kamerę.
-4. W scenie `trees` billboardy obracają się tylko wokół osi pionowej (Y).
-5. W scenie `clouds` billboardy pełniej orientują się względem kamery.
-6. Wciśnij `R` i porusz kamerą: billboardy powinny być chwilowo "zamrożone".
+- Cieniowanie Phonga (ambient, diffuse, specular) z konfigurowalnymi parametrami materiału
+- Kamera perspektywiczna typu FPS ze swobodnym poruszaniem się po scenie
+- Wczytywanie modeli w formacie `.obj`
+- Billboardy w dwóch wariantach: **axial** (drzewa) i **world-oriented** (chmury)
+- Skybox z cubemapą złożoną z 6 tekstur
+- Obsługa tekstur w formacie PPM
